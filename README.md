@@ -11,9 +11,6 @@ Langage solicité:
 
 - Débuggez et tester un SaaS RH
 
-# Visiter
-
-[Voir le Rendu](https://nerion-1337.github.io/GameOn---OCR/)
 
 # Aperçu
 
