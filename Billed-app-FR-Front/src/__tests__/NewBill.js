@@ -223,75 +223,93 @@ describe("Given I am connected as an employee", () => {
   //---------------//
   describe("When i'm posting a form that is invalid", () => {
     test("If there is an error while posting the bill, the function should catch it and log an error message", async () => {
-      const mockedCreate = jest.fn(() =>
-        Promise.reject("Erreur 404")
-      );
-      const mockedStoreBills = {
-        bills: jest.fn(() => ({ create: mockedCreate })),
-      };
-      const onNavigate = jest.fn();
-      const newBills = new NewBill({
-        document,
-        onNavigate,
-        store: mockedStoreBills,
-        localStorage,
-      });
+    // On crée un objet simulé qui contient une fonction "create" qui renvoie la fonction simulée ci-dessus
+    const mockedStoreBills = {
+      bills: jest.fn(() => ({ create: mockedCreate })),
+    };
 
-      const file = new File(
-        ["facturefreemobile.jpg"],
-        "facturefreemobile.jpg",
-        { type: "image/jpeg" }
-      );
-      const input = screen.getByTestId("file");
-      Object.defineProperty(input, "files", {
-        value: [file],
-      });
+    // On crée des fonctions simulées pour "onNavigate" et "localStorage"
+    const onNavigate = jest.fn();
+    const localStorage = {
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+    };
 
-      const eventMock = {
-        target: {
-          value: "facturefreemobile.jpg",
-          files: [file],
-        },
-        preventDefault: jest.fn(),
-      };
-
-
-      try {
-        await newBills.handleChangeFile(eventMock);
-       } catch (error) {
-        expect(error.message).toBe("Erreur 404");
-       }  
-      
-    
+    // On crée une instance de la classe "NewBill", en passant les objets simulés ci-dessus comme arguments
+    const newBills = new NewBill({
+      document,
+      onNavigate,
+      store: mockedStoreBills,
+      localStorage,
     });
+
+    // On crée un objet "File" simulé et on l'associe à un élément HTML simulé
+    const file = new File(
+      ["facturefreemobile.jpg"],
+      "facturefreemobile.jpg",
+      { type: "image/jpeg" }
+    );
+    const input = screen.getByTestId("file");
+
+    // On définit la propriété "files" de l'élément HTML simulé ci-dessus pour qu'elle renvoie le fichier simulé ci-dessus
+    Object.defineProperty(input, "files", {
+      value: [file],
+    });
+
+    // On crée un objet "event" simulé qui contient l'élément HTML simulé ci-dessus, ainsi que des méthodes de simulation pour l'objet "event"
+    const eventMock = {
+      target: {
+        value: "facturefreemobile.jpg",
+        files: [file],
+      },
+      preventDefault: jest.fn(),
+    };
+
+    // On appelle la fonction "handleChangeFile" de l'instance "newBills" de la classe "NewBill" en lui passant l'objet "event" simulé ci-dessus
+    // On s'attend à ce que cette fonction renvoie une erreur qui doit être capturée dans la clause "catch" ci-dessous
+    try {
+      await newBills.handleChangeFile(eventMock);
+    } catch (error) {
+      // On vérifie que l'erreur renvoyée est bien l'erreur "Erreur 404" simulée ci-dessus
+      expect(error.message).toBe("Erreur 404");
+    }
+  });
 
     //---------------//
     test("If there is an error while updating the bill, the function should catch it and log an error message", async () => {
-      const updateMock = jest.fn(() => Promise.reject(Error("Erreur 404")));
-      const mockedStoreBills = {
-        bills: jest.fn(() => ({ update: updateMock })),
-      };
+// On crée un mock de la méthode `update` de l'objet `bills` qui retourne une promesse rejetée avec une erreur "Erreur 404"
+const updateMock = jest.fn(() => Promise.reject(Error("Erreur 404")));
+// On crée un objet `mockedStoreBills` avec une méthode `bills` qui retourne un objet contenant le mock de la méthode `update`
+const mockedStoreBills = {
+  bills: jest.fn(() => ({ update: updateMock })),
+};
 
-      const onNavigate = jest.fn();
-      const newBills = new NewBill({
-        document,
-        onNavigate,
-        store: mockedStoreBills,
-        localStorage,
-      });
+// On crée un mock de la méthode `onNavigate`
+const onNavigate = jest.fn();
+// On crée un objet `newBills` de type `NewBill` avec les paramètres spécifiés
+const newBills = new NewBill({
+  document,
+  onNavigate,
+  store: mockedStoreBills,
+  localStorage,
+});
 
-    
+// On appelle la méthode `updateBill` de `newBills` avec l'objet `bills` en paramètre
+try {
+  await newBills.updateBill(bills);
+} catch (error) {
+  // On vérifie que l'erreur retournée est "Erreur 404"
+  expect(error.message).toBe("Erreur 404");
+}
 
-      try {
-        await newBills.updateBill(bills);
-      } catch (error) {
-        expect(error.message).toBe("Erreur 404");
-      }
-  const consoleSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-        
-      consoleSpy.mockRestore()
-    });
+// On crée un spy sur la méthode `console.error` pour vérifier que la méthode a été appelée avec le message d'erreur
+const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+// On vérifie que la méthode `console.error` a bien été appelée avec le message d'erreur "Erreur 404"
+expect(consoleSpy).toHaveBeenCalledWith("Erreur 404");
+
+// On restaure la méthode `console.error` à son implémentation d'origine
+consoleSpy.mockRestore()
+});
   });
 });

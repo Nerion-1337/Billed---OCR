@@ -76,29 +76,12 @@ describe("Given I am connected as an employee", () => {
     });
   });
 
-  // test("Then handleClickIconEye should return the expected constants when called by a click", () => {
-  //   const billUrl =
-  //     "http://localhost:5678/public/4b392f446047ced066990b0627cfa444";
-  //   const imgWidth = 500;
-  //   const icon = document.createElement("div");
-  //   icon.setAttribute("data-bill-url", billUrl);
-  //   const billPage = new Bills({
-  //     document: document,
-  //     onNavigate: jest.fn(),
-  //     store: null,
-  //     localStorage: null,
-  //   });
-  //    $.fn.modal = jest.fn();
-
-  //   const expectedResult = `<div style='text-align: center;' class="bill-proof-container"><img width=${imgWidth} src=${billUrl} alt="Bill" /></div>`;
-  //   const result = billPage.handleClickIconEye(icon);
-  //   expect(result).toBe(expectedResult);
-  // });
-
   describe("When the eye icon is clicked", () => {
     test("Then, a dialog window with the image of the bill should open.", () => {
+      // On modifie l'objet global window pour y ajouter la méthode localStorage avec le mock localStorageMock.
       window = { ...window, localStorage: localStorageMock };
 
+      // On ajoute un objet utilisateur avec un type "Employee" dans le localStorage.
       window.localStorage.setItem(
         "user",
         JSON.stringify({
@@ -106,42 +89,65 @@ describe("Given I am connected as an employee", () => {
         })
       );
 
+      // On ajoute le HTML généré par la fonction BillsUI avec la première facture du tableau bills au corps de la page.
       document.body.innerHTML = BillsUI({ data: [bills.shift()] });
 
+      // On récupère le corps du tableau qui contient la première facture.
       const tableBody = screen.getByTestId("tbody");
 
+      // On récupère la première ligne du tableau.
       const tableRow = tableBody.querySelector("tr");
 
+      // On s'assure que la première ligne existe.
       expect(tableRow).not.toBeNull();
 
+      // On définit une fonction onNavigate qui remplace le contenu du corps de la page avec la page associée au pathname.
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname });
       };
+
+      // On définit un objet store égal au tableau bills.
       const store = bills;
+
+      // On crée une instance de la classe Bills en lui passant les éléments nécessaires pour son initialisation.
       const firstBill = new Bills({
         document,
         onNavigate,
         store,
         localStorage: window.localStorage,
       });
+
+      // On modifie la méthode modal de jQuery pour qu'elle soit un mock vide.
       $.fn.modal = jest.fn();
+
+      // On récupère l'icône de l'œil.
       const eyeIcon = screen.getByTestId("icon-eye");
 
+      // On s'assure que l'icône de l'œil existe.
       expect(eyeIcon).not.toBeNull();
 
+      // On définit une fonction handleClickIconEye égale à la méthode handleClickIconEye de l'instance firstBill avec l'icône de l'œil en paramètre.
       const handleClickIconEye = jest.fn(firstBill.handleClickIconEye(eyeIcon));
+
+      // On ajoute un écouteur d'événement click sur l'icône de l'œil avec la fonction handleClickIconEye comme callback.
       eyeIcon.addEventListener("click", handleClickIconEye);
 
+      // On déclenche l'événement click sur l'icône de l'œil.
       fireEvent.click(eyeIcon);
 
+      // On s'assure que la fonction handleClickIconEye a été appelée.
       expect(handleClickIconEye).toHaveBeenCalled();
 
+      // On récupère l'élément du DOM avec l'id "modaleFile".
       const dialogModal = document.getElementById("modaleFile");
+
+      // On s'assure que l'élément du DOM avec l'id "modaleFile" existe.
       expect(dialogModal).not.toBeNull();
     });
   });
 
   describe("When I request the list of bills", () => {
+    // On test la fenêtre de dialogue avec l'image de la facture qui doit s'ouvrir.
     test("Then the bills should be returned in the correct format and sorted by date", async () => {
       const store = { bills: () => ({ list: () => bills }) };
       const billPage = new Bills({
@@ -175,7 +181,9 @@ describe("Given I am connected as an employee", () => {
       );
     });
 
+    // On teste si la fonction getBills attrape l'erreur de format de date correctement
     test("getBills should catch format date error", async () => {
+      // On crée un mock de la méthode list() de l'objet bills pour renvoyer une facture avec une
       const store = {
         bills: () => ({
           list: jest.fn().mockResolvedValue([
@@ -199,6 +207,7 @@ describe("Given I am connected as an employee", () => {
         }),
       };
 
+      // On crée une instance de la classe Bills avec les paramètres nécessaires
       const billPage = new Bills({
         document: document,
         onNavigate: jest.fn(),
@@ -206,34 +215,42 @@ describe("Given I am connected as an employee", () => {
         localStorage: null,
       });
 
+      // On appelle la fonction getBills() de l'instance Bills et on stocke le résultat dans la variable bills
       const bills = await billPage.getBills();
+
+      // On recherche la facture avec la date invalide dans le tableau bills et on vérifie que la propriété date correspond bien à "error"
       const billWithErrorDate = bills.find((bill) => bill.id === "1");
       expect(billWithErrorDate.date).toEqual("error");
     });
   });
 });
 
-
-//GET test
+// Test pour vérifier la récupération des factures depuis l'API via une requête GET
 describe("When I am on the Bills Page", () => {
   test("fetches bills from the mock API using GET", async () => {
+    // On définit le type de l'utilisateur dans le local storage
     localStorage.setItem(
       "user",
       JSON.stringify({ type: "Employee", email: "a@a" })
     );
+    // On crée un élément div dans lequel on va ajouter l'application
     const root = document.createElement("div");
     root.setAttribute("id", "root");
     document.body.append(root);
+    // On charge l'application
     router();
+    // On simule la navigation vers la page des factures
     window.onNavigate(ROUTES_PATH.Bills);
 
+    // On vérifie que le bouton pour créer une nouvelle facture est présent
     const buttonNewBill = screen.getByTestId("btn-new-bill");
-
     expect(buttonNewBill).toBeTruthy();
   });
 
+  // Test pour vérifier la récupération des factures depuis l'API en cas d'erreur
   describe("When an error occurs to the API", () => {
     beforeEach(() => {
+      // On simule le local storage pour un utilisateur admin
       jest.spyOn(mockStore, "bills");
       Object.defineProperty(window, "localStorage", {
         value: localStorageMock,
@@ -248,8 +265,11 @@ describe("When I am on the Bills Page", () => {
       const root = document.createElement("div");
       root.setAttribute("id", "root");
       document.body.appendChild(root);
+      // On charge l'application
       router();
     });
+
+    // Test pour vérifier le message d'erreur 404 lorsqu'il y a une erreur avec l'API
     test("fetches bills from an API and fails with 404 message error", async () => {
       mockStore.bills.mockImplementationOnce(() => {
         return {
@@ -258,12 +278,16 @@ describe("When I am on the Bills Page", () => {
           },
         };
       });
+      // On simule la navigation vers la page des factures
       window.onNavigate(ROUTES_PATH.Bills);
+      // On attend la fin de la mise à jour du composant
       await new Promise(process.nextTick);
+      // On vérifie que le message d'erreur 404 est présent
       const message = await screen.getByText(/Erreur 404/);
       expect(message).toBeTruthy();
     });
 
+    // Test pour vérifier le message d'erreur 500 lorsqu'il y a une erreur avec l'API
     test("fetches messages from an API and fails with 500 message error", async () => {
       mockStore.bills.mockImplementationOnce(() => {
         return {
@@ -273,8 +297,11 @@ describe("When I am on the Bills Page", () => {
         };
       });
 
+      // On simule la navigation vers la page des factures
       window.onNavigate(ROUTES_PATH.Bills);
+      // On attend la fin de la mise à jour du composant
       await new Promise(process.nextTick);
+      // On vérifie que le message d'erreur 500 est présent
       const message = await screen.getByText(/Erreur 500/);
       expect(message).toBeTruthy();
     });
