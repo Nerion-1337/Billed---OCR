@@ -10,8 +10,3 @@ Langage solicité:
 # Objectif
 
 - Débuggez et tester un SaaS RH
-
-
-# Aperçu
-
-![screenshot du site](./maquette.png)
